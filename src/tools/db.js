@@ -14,7 +14,7 @@ const db = {
    *    collections: String 连接那个集合(必填)
    *    insertData: Object || Array 插入的数据 Obj:插入一条  Arrary:插入多条
    *    fail(err): Function 新增失败的回调(选填) 默认打印失败信息
-   *    success: Function 新增成功的回调(选填) 默认打印成功信息
+   *    success(res.ops): Function 新增成功的回调(选填,会把新增的数据传入回调) 默认打印成功信息
    * }
    */
   insert: options => {
@@ -49,7 +49,7 @@ const db = {
                 if (err) throw err;
                 // 执行用户传入的回调
                 if (options.success) {
-                  options.success();
+                  options.success(res.ops);
                 } else {
                   console.log("文档插入成功!插入数据如下:");
                   console.log(res.ops);
@@ -68,7 +68,7 @@ const db = {
                 if (err) throw err;
                 // 执行用户传入的回调
                 if (options.success) {
-                  options.success();
+                  options.success(res.ops);
                 } else {
                   console.log("文档插入成功!插入数据如下:");
                   console.log(res.ops);
@@ -95,7 +95,7 @@ const db = {
    *    deleteone: Object  删除一条数据
    *    deletemany: Object 删除多条数据
    *    fail(err): Function 删除失败的回调(选填) 默认打印失败信息
-   *    success: Function 删除成功的回调(选填) 默认打印成功信息
+   *    success(res.deletedCount): Function 删除成功的回调(选填,会把删除的条数传入回调中) 默认打印成功信息
    * }
    */
   delete: options => {
@@ -127,7 +127,7 @@ const db = {
                 if (err) throw err;
                 // 执行用户传入的回调
                 if (options.success) {
-                  options.success();
+                  options.success(res.deletedCount);
                 } else {
                   console.log("文档删除成功!删除数据条数:");
                   console.log(res.deletedCount);
@@ -144,7 +144,7 @@ const db = {
                 if (err) throw err;
                 // 执行用户传入的回调
                 if (options.success) {
-                  options.success();
+                  options.success(res.deletedCount);
                 } else {
                   console.log("文档删除成功!删除数据条数:");
                   console.log(res.deletedCount);
@@ -164,7 +164,7 @@ const db = {
    *    updateCriteria: Object 更新条件
    *    updateData: Object 更新数据
    *    fail(err): Function 更新失败的回调(选填) 默认打印失败信息
-   *    success: Function 更新成功的回调(选填) 默认打印成功信息
+   *    success(res.modifiedCount): Function 更新成功的回调(选填,会把更新的总条数传入回调) 默认打印成功信息
    * }
    */
   update: options => {
@@ -199,7 +199,7 @@ const db = {
                   if (err) throw err;
                   // 执行用户传入的回调
                   if (options.success) {
-                    options.success();
+                    options.success(res.modifiedCount);
                   } else {
                     console.log("文档更新成功!更新数据条数:");
                     console.log(res.modifiedCount);
@@ -219,7 +219,7 @@ const db = {
                   if (err) throw err;
                   // 执行用户传入的回调
                   if (options.success) {
-                    options.success();
+                    options.success(res.modifiedCount);
                   } else {
                     console.log("文档更新成功!更新数据条数:");
                     console.log(res.modifiedCount);
@@ -238,7 +238,7 @@ const db = {
    *    collections: String 连接那个集合(必填)
    *    findCriteria: Object 查询条件（选填）默认不填是查询此集合的所有数据
    *    fail(err): Function 更新失败的回调(选填) 默认打印失败信息
-   *    success: Function 更新成功的回调(选填) 默认打印成功信息
+   *    success(result): Function 更新成功的回调(选填,会把查询结果传入回调) 默认打印成功信息
    * }
    */
   find: options => {
@@ -271,11 +271,12 @@ const db = {
                   console.log(err);
                   return false;
                 }
-                console.log(result);
+                options.success(result);
                 // 关闭数据库
                 client.close();
               });
           } else {
+            console.log(options.findCriteria);
             // 带条件的查询
             dbc
               .collection(options.collections)
@@ -285,7 +286,7 @@ const db = {
                   console.log(err);
                   return false;
                 }
-                console.log(result);
+                options.success(result);
                 // 关闭数据库
                 client.close();
               });
