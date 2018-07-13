@@ -14,7 +14,7 @@ const db = {
    *    collections: String 连接那个集合(必填)
    *    insertData: Object || Array 插入的数据 Obj:插入一条  Arrary:插入多条
    *    fail(err): Function 新增失败的回调(选填) 默认打印失败信息
-   *    success(res.ops): Function 新增成功的回调(选填,会把新增的数据传入回调) 默认打印成功信息
+   *    success(res): Function 新增成功的回调(选填,会把新增操作的结果对象传入回调) 默认打印成功信息
    * }
    */
   insert: options => {
@@ -42,14 +42,13 @@ const db = {
             "[object Object]"
           ) {
             // 插入的是对象（一条数据）
-            console.log("obj");
             dbc
               .collection(options.collections)
               .insertOne(options.insertdata, (err, res) => {
                 if (err) throw err;
                 // 执行用户传入的回调
                 if (options.success) {
-                  options.success(res.ops);
+                  options.success(res);
                 } else {
                   console.log("文档插入成功!插入数据如下:");
                   console.log(res.ops);
@@ -60,7 +59,6 @@ const db = {
             Object.prototype.toString.call(options.insertdata) ==
             "[object Array]"
           ) {
-            console.log("arr");
             // 插入的是数组（多条数据）
             dbc
               .collection(options.collections)
@@ -68,7 +66,7 @@ const db = {
                 if (err) throw err;
                 // 执行用户传入的回调
                 if (options.success) {
-                  options.success(res.ops);
+                  options.success(res);
                 } else {
                   console.log("文档插入成功!插入数据如下:");
                   console.log(res.ops);
@@ -236,6 +234,7 @@ const db = {
    * 查找数据
    * options:{
    *    collections: String 连接那个集合(必填)
+   *    findFlag:  String 查询的标识(选填,默认查询多条) one:查询一条  many:查询多条
    *    findCriteria: Object 查询条件（选填）默认不填是查询此集合的所有数据
    *    fail(err): Function 更新失败的回调(选填) 默认打印失败信息
    *    success(result): Function 更新成功的回调(选填,会把查询结果传入回调) 默认打印成功信息
@@ -257,7 +256,6 @@ const db = {
             options.fail(err);
           }
         } else {
-          console.log("连接成功!");
           // 连接集合
           const dbc = client.db(dbname);
           // 判断用户查询的是所有数据还是带有条件
@@ -276,20 +274,35 @@ const db = {
                 client.close();
               });
           } else {
-            console.log(options.findCriteria);
             // 带条件的查询
-            dbc
-              .collection(options.collections)
-              .find(options.findCriteria)
-              .toArray((err, result) => {
-                if (err) {
-                  console.log(err);
-                  return false;
-                }
-                options.success(result);
-                // 关闭数据库
-                client.close();
-              });
+            // 判断查询的是一条还是多条
+            if (!options.findFlag || options.findFlag == "many") {
+              // 不传findFlag 或传入的是many  查询多条
+              dbc
+                .collection(options.collections)
+                .find(options.findCriteria)
+                .toArray((err, result) => {
+                  if (err) {
+                    console.log(err);
+                    return false;
+                  }
+                  options.success(result);
+                  // 关闭数据库
+                  client.close();
+                });
+            } else if (options.findFlag == "one") {
+              // 查询一条
+              dbc
+                .collection(options.collections)
+                .findOne(options.findCriteria, (err, doc) => {
+                  if (options.success) {
+                    options.success(doc);
+                  } else {
+                    console.log("查询结果如下:");
+                    console.log(doc);
+                  }
+                });
+            }
           }
         }
       }

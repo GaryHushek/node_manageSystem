@@ -6,14 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-    <script src="/js/jquery.min.js"></script>
     <title>登录页面</title>
+    <style>
+        .tost {
+            display: none;
+            left: 200px;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container" style="margin-top:180px; ">
-
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-6 col-md-offset-3" style="position: relative;">
             <div class="panel panel-primary">
                 <div class="panel-heading">登录学生管理系统</div>
                 <div class="panel-body">
@@ -40,19 +44,31 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
+                            <div class="col-sm-offset-2 col-sm-10" style="position: relative;">
                                 <!-- submit有一个默认的提交行为，不要加上 -->
                                 <!-- <button type="submit" onclick="login()"  class="btn btn-default">登录</button> -->
                                 <button class="btn btn-default">登录</button>
                                 &nbsp;&nbsp;
                                 <input type="button" value="注册" class="btn btn-danger">
+                                <div class="popover right tost">
+                                    <div class="arrow"></div>
+                                    <div class="popover-content">
+                                        用户名已存在
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
+    <!-- 引入jq -->
+    <script src="/js/jquery.min.js"></script>
+    <!-- 引入md5加密 -->
+    <script src="/js/md5.js"></script>
     <script>
         $(function () {
             // 点击重新回去验证码
@@ -61,32 +77,92 @@
             });
             // 登陆
             $(".btn-default").click(function () {
+                // 拿到用户名,密码,验证码
+                let username = $("#usernameId").val();
+                let password = $("#passwordId").val();
+                let vcode = $("#vcodeId").val();
+                // 用户名密码非空判断
+                if ((username && password && vcode) == '') {
+                    $(".tost").show();
+                    $(".popover-content").html("请完善表单!");
+                    setTimeout(() => {
+                        $(".tost").hide();
+                    }, 2000)
+                    return
+                }
+                // 密码用md5加密 加盐加密
+                password = $.md5(password + "!@#$%^");
                 $.ajax({
                     url: "/account/dologin",
                     type: "post",
                     data: {
-                        username: $("#usernameId").val(),
-                        password: $("#passwordId").val()
+                        username,
+                        password,
+                        vcode
                     },
                     success: backdata => {
                         console.log(backdata);
+                        if (backdata.status === 0) {
+                            // 登录失败,重新刷新验证码
+                            $("#vcodeimg").attr("src", "/account/vcode?" + Math.random());
+                            $(".tost").show();
+                            $(".popover-content").html(backdata.message);
+                            setTimeout(() => {
+                                $(".tost").hide();
+                            }, 2000)
+                            return;
+                        }
+                        // 成功去后台首页
+                        window.location.href = '/studentManager/list';
                     }
                 })
             });
             // 注册
             $(".btn-danger").click(function () {
-                console.log("111");
-                $.ajax({
-                    url: "/account/doregister",
-                    type: "post",
-                    data: {
-                        username: $("#usernameId").val(),
-                        password: $("#passwordId").val()
-                    },
-                    success: backdata => {
-                        console.log(backdata);
-                    }
-                })
+                // 拿到用户名,密码,验证码
+                let username = $("#usernameId").val();
+                let password = $("#passwordId").val();
+                let vcode = $("#vcodeId").val();
+                // 用户名密码非空判断
+                if ((username && password && vcode) == '') {
+                    $(".tost").show();
+                    $(".popover-content").html("请完善表单!");
+                    setTimeout(() => {
+                        $(".tost").hide();
+                    }, 2000)
+                    return
+                } else {
+                    // 密码用md5加密 加盐加密
+                    password = $.md5(password + "!@#$%^");
+                    $.ajax({
+                        url: "/account/doregister",
+                        type: "post",
+                        data: {
+                            username,
+                            password,
+                            vcode
+                        },
+                        success: backdata => {
+                            if (backdata.status === 0) {
+                                // 注册失败失败,重新刷新验证码
+                                $("#vcodeimg").attr("src", "/account/vcode?" + Math.random());
+                                $(".tost").show();
+                                $(".popover-content").html(backdata.message);
+                                setTimeout(() => {
+                                    $(".tost").hide();
+                                }, 2000)
+                                return;
+                            }
+                            // 去登录页
+                            $(".tost").show();
+                            $(".popover-content").html(backdata.message);
+                            setTimeout(() => {
+                                $(".tost").hide();
+                                window.location.reload()
+                            }, 1000)
+                        }
+                    })
+                }
             });
         })
     </script>

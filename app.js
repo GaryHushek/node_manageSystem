@@ -1,7 +1,9 @@
 // 引入path模块
 const path = require("path");
-// 引入express
+// 引入express模块
 const express = require("express");
+// 引入session模块
+const session = require("express-session");
 // 创建app
 const app = express();
 // 使用静态资源中间件
@@ -15,6 +17,12 @@ const accountRouter = require(path.join(
 const bodyParser = require("body-parser");
 // parse application/x-www-form-urlencoded  解析普通post请求主体
 app.use(bodyParser.urlencoded({ extended: false }));
+// Use the session middleware 使用session中间件
+app.use(session({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true  // 初始化值 (true 只要第一次访问就已经开辟了session空间)
+}))
 
 // 使用路由中间件处理浏览器请求
 app.use("/account", accountRouter);
