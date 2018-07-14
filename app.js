@@ -8,10 +8,15 @@ const session = require("express-session");
 const app = express();
 // 使用静态资源中间件
 app.use(express.static(path.join(__dirname, "./src/statics")));
-// 引入集成中间件
+// 引入集成的账户路由中间件
 const accountRouter = require(path.join(
   __dirname,
   "./src/routers/accountRouter"
+));
+// 引入集成学生路由中间件
+const studentRouter = require(path.join(
+  __dirname,
+  "./src/routers/studentRouter"
 ));
 // 解析post请求的中间件
 const bodyParser = require("body-parser");
@@ -24,8 +29,11 @@ app.use(session({
   saveUninitialized: true  // 初始化值 (true 只要第一次访问就已经开辟了session空间)
 }))
 
-// 使用路由中间件处理浏览器请求
+// 使用账户路由中间件处理浏览器请求
 app.use("/account", accountRouter);
+// 使用学生路由中间件处理浏览器请求
+app.use("/studentManager", studentRouter);
+
 // 开启web服务
 app.listen(3000, "127.0.0.1", err => {
   // 处理异常

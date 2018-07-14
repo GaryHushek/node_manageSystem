@@ -24,62 +24,66 @@ const db = {
       { useNewUrlParser: true },
       (err, client) => {
         if (err) {
+          // 关闭数据库连接
+          client.close();
           if (!options.fail) {
             console.log(err);
-            // 关闭数据库连接
-            client.close();
           } else {
             // 执行
             options.fail(err);
           }
         } else {
+          console.log(options.insertData);
           console.log("连接成功!");
           // 连接集合
           const dbc = client.db(dbname);
           // 判断用户插入的是一条还是多条
           if (
-            Object.prototype.toString.call(options.insertdata) ==
+            Object.prototype.toString.call(options.insertData) ==
             "[object Object]"
           ) {
             // 插入的是对象（一条数据）
             dbc
               .collection(options.collections)
-              .insertOne(options.insertdata, (err, res) => {
+              .insertOne(options.insertData, (err, res) => {
                 if (err) throw err;
+                // 关闭数据库连接
+                client.close();
                 // 执行用户传入的回调
                 if (options.success) {
                   options.success(res);
                 } else {
                   console.log("文档插入成功!插入数据如下:");
                   console.log(res.ops);
-                  client.close();
                 }
               });
           } else if (
-            Object.prototype.toString.call(options.insertdata) ==
+            Object.prototype.toString.call(options.insertData) ==
             "[object Array]"
           ) {
             // 插入的是数组（多条数据）
             dbc
               .collection(options.collections)
-              .insertMany(options.insertdata, (err, res) => {
+              .insertMany(options.insertData, (err, res) => {
                 if (err) throw err;
+                // 关闭数据库连接
+                client.close();
                 // 执行用户传入的回调
                 if (options.success) {
                   options.success(res);
                 } else {
                   console.log("文档插入成功!插入数据如下:");
                   console.log(res.ops);
-                  client.close();
                 }
               });
           } else {
+            // 关闭数据库连接
+            client.close();
             if (options.fail) {
               options.fail();
             } else {
               // 传入异常数据,关闭数据库连接
               console.log("插入数据类型异常,请传入对象或对象数组!");
-              client.close();
             }
           }
         }
@@ -90,8 +94,8 @@ const db = {
    * 删除数据
    * options:{
    *    collections: String 连接那个集合(必填)
-   *    deleteone: Object  删除一条数据
-   *    deletemany: Object 删除多条数据
+   *    deleteOne: Object  删除一条数据
+   *    deleteMany: Object 删除多条数据
    *    fail(err): Function 删除失败的回调(选填) 默认打印失败信息
    *    success(res.deletedCount): Function 删除成功的回调(选填,会把删除的条数传入回调中) 默认打印成功信息
    * }
@@ -103,10 +107,10 @@ const db = {
       { useNewUrlParser: true },
       (err, client) => {
         if (err) {
+          // 关闭数据库连接
+          client.close();
           if (!options.fail) {
             console.log(err);
-            // 关闭数据库连接
-            client.close();
           } else {
             // 执行
             options.fail(err);
@@ -116,37 +120,37 @@ const db = {
           // 连接集合
           const dbc = client.db(dbname);
           // 判断用户删除的是一条还是多条
-          if (options.deleteone) {
-            // 删除的是对象（一条数据）
-            console.log("obj");
+          if (options.deleteOne) {
+            // 删除一条数据
             dbc
               .collection(options.collections)
-              .deleteOne(options.deletedata, (err, res) => {
+              .deleteOne(options.deleteOne, (err, res) => {
                 if (err) throw err;
+                // 关闭数据库
+                client.close();
                 // 执行用户传入的回调
                 if (options.success) {
-                  options.success(res.deletedCount);
+                  options.success(res);
                 } else {
-                  console.log("文档删除成功!删除数据条数:");
-                  console.log(res.deletedCount);
-                  client.close();
+                  console.log("文档删除成功!");
+                  console.log(res);
                 }
               });
           }
-          if (options.deletemany) {
-            console.log("arr");
-            // 删除的是数组（多条数据）
+          if (options.deleteMany) {
+            // 删除多条数据
             dbc
               .collection(options.collections)
-              .deleteMany(options.insertdata, (err, res) => {
+              .deleteMany(options.deleteMany, (err, res) => {
                 if (err) throw err;
                 // 执行用户传入的回调
+                // 关闭数据库
+                client.close();
                 if (options.success) {
-                  options.success(res.deletedCount);
+                  options.success(res);
                 } else {
-                  console.log("文档删除成功!删除数据条数:");
-                  console.log(res.deletedCount);
-                  client.close();
+                  console.log("文档删除成功!");
+                  console.log(res);
                 }
               });
           }
@@ -162,7 +166,7 @@ const db = {
    *    updateCriteria: Object 更新条件
    *    updateData: Object 更新数据
    *    fail(err): Function 更新失败的回调(选填) 默认打印失败信息
-   *    success(res.modifiedCount): Function 更新成功的回调(选填,会把更新的总条数传入回调) 默认打印成功信息
+   *    success(res): Function 更新成功的回调(选填,会把更新的结果传入回调) 默认打印成功信息
    * }
    */
   update: options => {
@@ -172,10 +176,10 @@ const db = {
       { useNewUrlParser: true },
       (err, client) => {
         if (err) {
+          // 关闭数据库连接
+          client.close();
           if (!options.fail) {
             console.log(err);
-            // 关闭数据库连接
-            client.close();
           } else {
             // 执行
             options.fail(err);
@@ -187,7 +191,6 @@ const db = {
           // 判断用户更新的是一条还是多条
           if (options.updateFlag == "one") {
             // 更新的是对象（一条数据）
-            console.log("obj");
             dbc
               .collection(options.collections)
               .updateOne(
@@ -195,19 +198,19 @@ const db = {
                 options.updateData,
                 (err, res) => {
                   if (err) throw err;
+                  // 关闭数据库
+                  client.close();
                   // 执行用户传入的回调
                   if (options.success) {
-                    options.success(res.modifiedCount);
+                    options.success(res);
                   } else {
                     console.log("文档更新成功!更新数据条数:");
-                    console.log(res.modifiedCount);
-                    client.close();
+                    console.log(res);
                   }
                 }
               );
           } else if (options.updateFlag == "many") {
             // 更新的是对象（一条数据）
-            console.log("obj");
             dbc
               .collection(options.collections)
               .updateMany(
@@ -215,13 +218,14 @@ const db = {
                 options.updateData,
                 (err, res) => {
                   if (err) throw err;
+                  // 关闭数据库
+                  client.close();
                   // 执行用户传入的回调
                   if (options.success) {
-                    options.success(res.modifiedCount);
+                    options.success(res);
                   } else {
                     console.log("文档更新成功!更新数据条数:");
-                    console.log(res.modifiedCount);
-                    client.close();
+                    console.log(res);
                   }
                 }
               );
@@ -247,10 +251,10 @@ const db = {
       { useNewUrlParser: true },
       (err, client) => {
         if (err) {
+          // 关闭数据库连接
+          client.close();
           if (!options.fail) {
             console.log(err);
-            // 关闭数据库连接
-            client.close();
           } else {
             // 执行
             options.fail(err);
@@ -265,36 +269,39 @@ const db = {
               .collection(options.collections)
               .find({})
               .toArray((err, result) => {
+                // 关闭数据库
+                client.close();
                 if (err) {
                   console.log(err);
                   return false;
                 }
                 options.success(result);
-                // 关闭数据库
-                client.close();
               });
           } else {
             // 带条件的查询
             // 判断查询的是一条还是多条
             if (!options.findFlag || options.findFlag == "many") {
               // 不传findFlag 或传入的是many  查询多条
+              console.log(options.findCriteria);
               dbc
                 .collection(options.collections)
                 .find(options.findCriteria)
                 .toArray((err, result) => {
+                  // 关闭数据库
+                  client.close();
                   if (err) {
                     console.log(err);
                     return false;
                   }
                   options.success(result);
-                  // 关闭数据库
-                  client.close();
                 });
             } else if (options.findFlag == "one") {
               // 查询一条
               dbc
                 .collection(options.collections)
                 .findOne(options.findCriteria, (err, doc) => {
+                  // 关闭数据库
+                  client.close();
                   if (options.success) {
                     options.success(doc);
                   } else {

@@ -69,6 +69,7 @@ exports.doregister = (req, res) => {
     findFlag: "one",
     findCriteria: { username },
     success: doc => {
+      console.log(doc);
       if (doc) {
         // 用户名存在
         res.status(200).send({ status: 1, message: "用户名已存在!" });
@@ -77,7 +78,7 @@ exports.doregister = (req, res) => {
         // 插入数据
         db.insert({
           collections: "user",
-          insertdata: {
+          insertData: {
             username,
             password
           },

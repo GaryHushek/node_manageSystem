@@ -6,7 +6,7 @@ const express = require("express");
 const accountRouter = express.Router();
 // 数据库模块
 const db = require("../tools/db");
-// 引入控制器模块
+// 引入账户控制器模块
 const accountController = require(path.join(
   __dirname,
   "../controllers/accountController"
