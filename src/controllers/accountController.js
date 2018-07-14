@@ -47,6 +47,9 @@ exports.dologin = (req, res) => {
       console.log(result);
       // 判断查询数据的长度
       if (result.length != 0) {
+        // 存储用户信息在session,用来后续权限判断,和用户信息渲染
+        req.session.username = username;
+        req.session.password = password;
         res.status(200).send({ status: 1, message: "登陆成功!" });
       } else {
         res.status(200).send({ status: 0, message: "用户名或密码错误!" });

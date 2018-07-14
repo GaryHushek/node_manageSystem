@@ -22,9 +22,11 @@ exports.list = (req, res) => {
   });
   // 执行查找成功后回调
   find.then(result => {
+    // 查询登陆用户信息
+    const username = req.session.username;
     xtpl.renderFile(
       path.join(__dirname, "../views/list.html"),
-      { studentList: result },
+      { studentList: result, username },
       (err, content) => {
         res.status(200).send(content);
       }
@@ -41,7 +43,8 @@ exports.search = (req, res) => {
     this.list(req, res);
   } else {
     // 创建一个正则对象,模糊查询输入的学生信息
-    let reg = new RegExp(name);
+    //                  (正则规则,i== 大小写不敏感的匹配)
+    let reg = new RegExp(name, "i");
     // 使用promise异步对象
     let find = new Promise((resolve, reject) => {
       // 读取数据库,查询所有的学生信息
@@ -69,9 +72,10 @@ exports.search = (req, res) => {
 };
 // 新增学生页面
 exports.add = (req, res) => {
+  const username = req.session.username;
   xtpl.renderFile(
     path.join(__dirname, "../views/add.html"),
-    {},
+    { username },
     (err, content) => {
       res.status(200).send(content);
     }
@@ -79,7 +83,6 @@ exports.add = (req, res) => {
 };
 // 处理新增学生事件
 exports.doadd = (req, res) => {
-  console.log("111");
   // 获取到post请求主体
   const { name, age, sex, phone, address, introduction } = req.body;
   db.insert({
@@ -156,6 +159,7 @@ exports.edit = (req, res) => {
   find.then(result => {
     // 查询数据成功后执行,读取eddit.html文件,用查询过来的数据替换
     const { name, age, sex, phone, address, introduction } = result;
+    const username = req.session.username;
     xtpl.renderFile(
       path.join(__dirname, "../views/edit.html"),
       {
@@ -167,7 +171,8 @@ exports.edit = (req, res) => {
           phone,
           address,
           introduction
-        }
+        },
+        username
       },
       (err, content) => {
         res.status(200).send(content);
@@ -175,10 +180,12 @@ exports.edit = (req, res) => {
     );
   });
 };
+
 // 处理编辑一条学生信息事件
 exports.doedit = (req, res) => {
+  const id = req.params.studentID;
   // 获取学生信息
-  const { id, name, age, sex, phone, address, introduction } = req.body;
+  const { name, age, sex, phone, address, introduction } = req.body;
   console.log(id, name, age, sex, phone, address, introduction);
   // 更新学生信息
   db.update({
@@ -207,7 +214,7 @@ exports.doedit = (req, res) => {
           );
       } else {
         // 更新失败,回更新页
-        res.status(200).send({ status: 0, message: "更新失败!" });
+        res.status(200).end('<script>alert("更新失败!")</script>');
       }
     }
   });

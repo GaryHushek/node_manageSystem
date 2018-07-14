@@ -8,6 +8,33 @@ const session = require("express-session");
 const app = express();
 // 使用静态资源中间件
 app.use(express.static(path.join(__dirname, "./src/statics")));
+// Use the session middleware 使用session中间件
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: true,
+    saveUninitialized: true, // 初始化值 (true 只要第一次访问就已经开辟了session空间)
+    cookie: {
+      maxAge: 1000 * 60 * 30 // 设置session过期时间 30分钟
+    }
+  })
+);
+
+// 拦截浏览器的所有请求
+app.all("*", (req, res, next) => {
+  if (req.url.includes("account")) {
+    // 账号相关直接过
+    next();
+  } else {
+    // 后台操作相关的验证是否登陆
+    // 设置session一定要在验证session之前,否则req.session就是undefined报错
+    if (req.session.username) {
+      next();
+    } else {
+      res.status(200).send('<script>location.href="/account/login"</script>');
+    }
+  }
+});
 // 引入集成的账户路由中间件
 const accountRouter = require(path.join(
   __dirname,
@@ -22,12 +49,6 @@ const studentRouter = require(path.join(
 const bodyParser = require("body-parser");
 // parse application/x-www-form-urlencoded  解析普通post请求主体
 app.use(bodyParser.urlencoded({ extended: false }));
-// Use the session middleware 使用session中间件
-app.use(session({
-  secret: 'keyboard cat',
-  resave: true,
-  saveUninitialized: true  // 初始化值 (true 只要第一次访问就已经开辟了session空间)
-}))
 
 // 使用账户路由中间件处理浏览器请求
 app.use("/account", accountRouter);

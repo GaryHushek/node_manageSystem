@@ -33,7 +33,6 @@ const db = {
             options.fail(err);
           }
         } else {
-          console.log(options.insertData);
           console.log("连接成功!");
           // 连接集合
           const dbc = client.db(dbname);

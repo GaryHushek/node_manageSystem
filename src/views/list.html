@@ -60,7 +60,9 @@
     // 点击删除一条信息
     function del(deleteID) {
         // 利用window.location.href 发送get请求删除一条学生信息
-        window.location.href = '/studentManager/delete?id=' + deleteID;
+        if (confirm("确认删除吗?")) {
+            window.location.href = '/studentManager/delete?id=' + deleteID;
+        }
         // $.ajax({
         //     url: '/studentManager/delete?id=' + deleteID,
         //     success: backData => {

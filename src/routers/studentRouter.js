@@ -24,7 +24,7 @@ studentRouter.get("/delete", studentController.delete);
 // 编辑学生信息页面路由委派
 studentRouter.get("/edit", studentController.edit);
 // 编辑学生信息事件路由委派
-studentRouter.post("/doedit", studentController.doedit);
+studentRouter.post("/doedit/:studentID", studentController.doedit);
 
 // 导出处理有关学生的路由模块
 module.exports = studentRouter;

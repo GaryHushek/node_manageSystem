@@ -14,14 +14,13 @@
     </ol>
   </div>
   <div class="panel-body">
-    <form action="/studentmanager/doedit" method="post" class="form-horizontal">
+    <form action="/studentManager/doedit/{{student.id}}" method="post" class="form-horizontal">
       <div class="form-group">
         <label for="vtitle" class="col-sm-2 control-label">姓名</label>
         <div class="col-sm-10">
           <input type="text" class="form-control" name="name" value="{{student.name}}" id="name" placeholder="请输入姓名">
         </div>
       </div>
-      <input type="hidden" class="form-control" name="id" value="{{student.id}}" id="student-id">
       <div class="form-group">
         <label for="vsortno" class="col-sm-2 control-label">年龄</label>
         <div class="col-sm-10">
